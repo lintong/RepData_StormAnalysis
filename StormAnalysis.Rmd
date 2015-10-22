@@ -34,10 +34,13 @@ DF      <- DF %>% mutate_each(funs(tolower), EVTYPE)
 lookup  <- read.csv('lookup.csv')
 DF$EVTYPE_NEW  <- lookup[match(DF$EVTYPE, lookup$old), 'new']
 
-index <- !is.na(DF$EVTYPE_NEW)
+#index <- !is.na(DF$EVTYPE_NEW)
 #DF$EVTYPE[index] <- DF$EVTYPE_NEW[index]
 
-DF$EVTYPE[index] <- DF$EVTYPE_NEW[index]
+DF <- transform(DF, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW))
+
+
+#DF$EVTYPE[index] <- DF$EVTYPE_NEW[index]
 
 #DT[!is.na(EVTYPE_NEW), EVTYPE := EVTYPE_NEW]
 
