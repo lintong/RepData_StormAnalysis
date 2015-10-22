@@ -21,3 +21,19 @@ download.file(url, tempf, method="curl")
 ```{r}
 DF      <- read.csv(bzfile(tempf))
 ```
+
+
+
+```{r}
+require(dplyr)
+
+# clean-up by converting to lower case
+DF <- DF %>% mutate_each(funs(tolower), EVTYPE)
+
+# use look-up table to futher align the data
+
+# Generate an aggregate
+injures_fatalities_by_evtype <- aggregate(cbind(FATALITIES, INJURIES)~EVTYPE, data=DF, sum)
+injures_fatalities_by_evtype <- filter(injures_fatalities_by_evtype, FATALITIES != 0 | INJURIES != 0)
+injures_fatalities_by_evtype
+```
