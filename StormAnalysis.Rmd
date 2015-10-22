@@ -5,35 +5,61 @@ date: "22 October 2015"
 output: html_document
 ---
 
+## Synopsis
+
+
+
+## Data Processing
 
 ```{r setup}
 knitr::opts_chunk$set(cache=TRUE)
+
+require(dplyr)
 ```
 
 
-```{r}
+```{r data-download}
 url     <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2'
 tempf   <- tempfile()
 download.file(url, tempf, method="curl")
-```
-
-
-```{r}
 DF      <- read.csv(bzfile(tempf))
 ```
 
-
-
-```{r}
-require(dplyr)
+```{r data-cleanup}
 
 # clean-up by converting to lower case
-DF <- DF %>% mutate_each(funs(tolower), EVTYPE)
+DF      <- DF %>% mutate_each(funs(tolower), EVTYPE)
 
 # use look-up table to futher align the data
+lookup  <- read.csv('lookup.csv')
+DF$EVTYPE_NEW  <- lookup[match(DF$EVTYPE, lookup$old), 'new']
+
+index <- !is.na(DF$EVTYPE_NEW)
+#DF$EVTYPE[index] <- DF$EVTYPE_NEW[index]
+
+DF$EVTYPE[index] <- DF$EVTYPE_NEW[index]
+
+#DT[!is.na(EVTYPE_NEW), EVTYPE := EVTYPE_NEW]
+
+#http://stackoverflow.com/questions/8214303/conditional-replacement-of-values-in-a-data-frame
+#df <- within(df, est[b==0] <- (a[b==0]-5)/2.533)
+```
+
+
+```{r generate-health-consequences}
 
 # Generate an aggregate
 injures_fatalities_by_evtype <- aggregate(cbind(FATALITIES, INJURIES)~EVTYPE, data=DF, sum)
 injures_fatalities_by_evtype <- filter(injures_fatalities_by_evtype, FATALITIES != 0 | INJURIES != 0)
 injures_fatalities_by_evtype
+```
+
+```{r generate-economic-consequences}
+
+```
+
+## Results
+
+```{r publish-results}
+
 ```
