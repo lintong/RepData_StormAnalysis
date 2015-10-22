@@ -31,25 +31,19 @@ DF      <- read.csv(bzfile(tempf))
 DF      <- DF %>% mutate_each(funs(tolower), EVTYPE)
 
 # use look-up table to futher align the data
-lookup  <- read.csv('lookup.csv')
+lookup  <- read.csv('lookup.csv', colClasses = c("character","character"))
+
+#ref: http://stackoverflow.com/questions/8214303/conditional-replacement-of-values-in-a-data-frame
 DF$EVTYPE_NEW  <- lookup[match(DF$EVTYPE, lookup$old), 'new']
-
-#index <- !is.na(DF$EVTYPE_NEW)
-#DF$EVTYPE[index] <- DF$EVTYPE_NEW[index]
-
-DF <- transform(DF, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW))
+DF <- transform(DF, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW)) 
 
 
-#DF$EVTYPE[index] <- DF$EVTYPE_NEW[index]
 
-#DT[!is.na(EVTYPE_NEW), EVTYPE := EVTYPE_NEW]
-
-#http://stackoverflow.com/questions/8214303/conditional-replacement-of-values-in-a-data-frame
-#df <- within(df, est[b==0] <- (a[b==0]-5)/2.533)
 ```
 
 
 ```{r generate-health-consequences}
+
 
 # Generate an aggregate
 injures_fatalities_by_evtype <- aggregate(cbind(FATALITIES, INJURIES)~EVTYPE, data=DF, sum)
