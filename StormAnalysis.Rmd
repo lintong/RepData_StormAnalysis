@@ -37,18 +37,15 @@ lookup  <- read.csv('lookup.csv', colClasses = c("character","character"))
 DF$EVTYPE_NEW  <- lookup[match(DF$EVTYPE, lookup$old), 'new']
 DF <- transform(DF, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW)) 
 
-
-
-```
-
-
-```{r generate-health-consequences}
-
+# TODO split  
 
 # Generate an aggregate
 injures_fatalities_by_evtype <- aggregate(cbind(FATALITIES, INJURIES)~EVTYPE, data=DF, sum)
 injures_fatalities_by_evtype <- filter(injures_fatalities_by_evtype, FATALITIES != 0 | INJURIES != 0)
 injures_fatalities_by_evtype
+
+
+
 ```
 
 ```{r generate-economic-consequences}
