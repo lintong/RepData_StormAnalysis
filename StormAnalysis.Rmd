@@ -19,41 +19,43 @@ require(dplyr)
 
 
 ```{r data-download}
-url     <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2'
-tempf   <- tempfile()
+url            <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2'
+tempf          <- tempfile()
 download.file(url, tempf, method="curl")
-DF      <- read.csv(bzfile(tempf))
+DF             <- na.omit(read.csv(bzfile(tempf)))
 ```
 
 ```{r data-cleanup}
 
 # clean-up by converting to lower case
-DF      <- DF %>% mutate_each(funs(tolower), EVTYPE)
+DF             <- DF %>% mutate_each(funs(tolower), EVTYPE)
 
 # use look-up table to futher align the data
-lookup  <- read.csv('lookup.csv', colClasses = c("character","character"))
+# a variant of the following reference http://stackoverflow.com/questions/8214303/conditional-replacement-of-values-in-a-data-frame
+LOOKUP_DF      <- read.csv('lookup.csv', colClasses = c("character","character"))
+head(LOOKUP_DF)
 
-#ref: http://stackoverflow.com/questions/8214303/conditional-replacement-of-values-in-a-data-frame
-DF$EVTYPE_NEW  <- lookup[match(DF$EVTYPE, lookup$old), 'new']
-DF <- transform(DF, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW)) 
+DF$EVTYPE_NEW  <- LOOKUP_DF[match(DF$EVTYPE, LOOKUP_DF$OLD), 'NEW']
+DF             <- transform(DF, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW)) 
+```
 
-# TODO split  
+```{r generate-aggregate}
 
-# Generate an aggregate
-injures_fatalities_by_evtype <- aggregate(cbind(FATALITIES, INJURIES)~EVTYPE, data=DF, sum)
-injures_fatalities_by_evtype <- filter(injures_fatalities_by_evtype, FATALITIES != 0 | INJURIES != 0)
-injures_fatalities_by_evtype
-
-
+# Generate the aggregate
+by_evtype <- aggregate(cbind(FATALITIES, INJURIES, PROPDMG)~EVTYPE, data=DF, sum)
 
 ```
 
-```{r generate-economic-consequences}
+```{r generate-aggregate-2}
 
+# Extract data that is equal to or above the 98th percentile
+quantiles <- sapply(by_evtype[-1], quantile, probs = .98)
+by_evtype <- filter(by_evtype, FATALITIES >= quantiles[1] | INJURIES >= quantiles[2] | PROPDMG >= quantiles[3])
+by_evtype
 ```
-
 ## Results
 
 ```{r publish-results}
 
+mosaicplot(~ FATALITIES + INJURIES + PROPDMG, data = by_evtype)
 ```

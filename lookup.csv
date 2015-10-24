@@ -1,9 +1,15 @@
-old,new
+OLD,NEW
 avalance,avalanche
 coastalstorm,coastal storm
 blowing snow,blizzard
 coastal flood,coastal flooding
 coastal flooding/erosion,coastal flooding
+cold wave,cold
+cold and snow,cold
+cold temperature,cold
+cold weather,cold
+cold/wind chill,cold
+cold/winds,cold
 winter weather mix,wintry mix
 winter weather/mix,wintry mix
 winter storm,winter storms
@@ -26,3 +32,59 @@ flood/flash flood,flood
 flood & heavy rain =,flood
 flooding,flood
 flood & heavy rain,flood
+dense fog,fog
+dust devil,dust storm
+extended cold,cold
+extreme cold,cold
+extreme cold/wind chill,cold
+extreme windchill,cold
+unseasonably cold,cols
+river and stream flood,flooding
+river flood,flooding
+river flooding,flooding
+thuderstorm winds,thunderstorms winds
+thundeerstorm winds,thunderstorms winds
+thunderestorm winds,thunderstorms winds
+thundersnow,thunderstorms winds
+thunderstorm,thunderstorms winds
+thunderstorm  winds,thunderstorms winds
+thunderstorm damage to,thunderstorms winds
+thunderstorm hail,thunderstorms winds
+thunderstorm wind,thunderstorms winds
+thunderstorm wind (g40),thunderstorms winds
+thunderstorm wind 60 mph,thunderstorms winds
+thunderstorm wind 65 mph,thunderstorms winds
+thunderstorm wind 65mph,thunderstorms winds
+thunderstorm wind 98 mph,thunderstorms winds
+thunderstorm wind g50,thunderstorms winds
+thunderstorm wind g52,thunderstorms winds
+thunderstorm wind g55,thunderstorms winds
+thunderstorm wind trees,thunderstorms winds
+thunderstorm wind/ tree,thunderstorms winds
+thunderstorm wind/ trees,thunderstorms winds
+thunderstorm wind/awning,thunderstorms winds
+thunderstorm wind/hail,thunderstorms winds
+thunderstorm wind/lightning,thunderstorms winds
+thunderstorm winds,thunderstorms winds
+thunderstorm winds 13,thunderstorms winds
+thunderstorm winds 63 mph,thunderstorms winds
+thunderstorm winds and,thunderstorms winds
+thunderstorm winds hail,thunderstorms winds
+thunderstorm winds lightning,thunderstorms winds
+thunderstorm winds.,thunderstorms winds
+thunderstorm winds/ flood,thunderstorms winds
+thunderstorm winds/flooding,thunderstorms winds
+thunderstorm winds/funnel clou,thunderstorms winds
+thunderstorm winds/hail,thunderstorms winds
+thunderstorm winds53,thunderstorms winds
+thunderstorm windshail,thunderstorms winds
+thunderstorm windss,thunderstorms winds
+thunderstorm wins,thunderstorms winds
+thunderstorms,thunderstorms winds
+thunderstorms wind,thunderstorms winds
+thunderstorms winds,thunderstorms winds
+thunderstormw,thunderstorms winds
+thunderstormwinds,thunderstorms winds
+thunderstrom wind,thunderstorms winds
+thundertorm winds,thunderstorms winds
+thunerstorm winds,thunderstorms winds
