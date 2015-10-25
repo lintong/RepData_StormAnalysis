@@ -1,20 +1,33 @@
 ---
-title: "RepData Storm Data Analysis"
+title: "Reproduceable Research - Storm Data Analysis"
 author: "Linton Galloway"
 date: "22 October 2015"
 output: html_document
 ---
 
 ## Synopsis
-
-
+The basic goal of this assignment is to explore the publically available NOAA Storm Database and answer some basic questions about severe weather events. The assignment attempts to find the most harmful weather events in terms of economic and health consequences.
 
 ## Data Processing
+The approach taken to process the data is to 
+1. rationalise duplicate weather events using a lookup chart available at <https://github.com/lintong/RepData_StormAnalysis/blob/master/storm_lookup.csv> and reduce the amount of significant duplication, 
+2. generate the sum of each type of weather event, using a desciminator of EVTYPE
+3. select the top siginificant weather events using the event type's quantile rank
 
 ```{r setup}
-knitr::opts_chunk$set(cache=TRUE)
+knitr::opts_chunk$set(fig.path='figure/', warning=FALSE, message=FALSE)
 
-require(dplyr)
+inline_hook <- function(x){
+  if(is.numeric(x)){
+    paste(format(x,digits=2))
+  }
+}
+
+knitr::knit_hooks$set(inline=inline_hook)
+
+library(dplyr)
+library(reshape2)
+library(ggplot2)
 ```
 
 
@@ -22,40 +35,54 @@ require(dplyr)
 url            <- 'https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2'
 tempf          <- tempfile()
 download.file(url, tempf, method="curl")
-DF             <- na.omit(read.csv(bzfile(tempf)))
+df             <- read.csv(bzfile(tempf))
 ```
 
 ```{r data-cleanup}
 
 # clean-up by converting to lower case
-DF             <- DF %>% mutate_each(funs(tolower), EVTYPE)
+df             <- df %>% mutate_each(funs(tolower), EVTYPE)
 
 # use look-up table to futher align the data
 # a variant of the following reference http://stackoverflow.com/questions/8214303/conditional-replacement-of-values-in-a-data-frame
-LOOKUP_DF      <- read.csv('lookup.csv', colClasses = c("character","character"))
-head(LOOKUP_DF)
+lookup_df      <- read.csv('storm_lookup.csv', colClasses = c("character","character"))
+head(lookup_df)
 
-DF$EVTYPE_NEW  <- LOOKUP_DF[match(DF$EVTYPE, LOOKUP_DF$OLD), 'NEW']
-DF             <- transform(DF, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW)) 
+df$EVTYPE_NEW  <- lookup_df[match(df$EVTYPE, lookup_df$OLD), 'NEW']
+df             <- transform(df, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW))
 ```
 
 ```{r generate-aggregate}
+physical_by_evtype<- aggregate(cbind(FATALITIES, INJURIES)~EVTYPE, data=df, sum)
+physical_quantiles <- sapply(physical_by_evtype[-1], quantile, probs = .97)
+physical_by_evtype <- filter(physical_by_evtype, 
+                             FATALITIES >= physical_quantiles[1] | 
+                             INJURIES >= physical_quantiles[2])
 
-# Generate the aggregate
-by_evtype <- aggregate(cbind(FATALITIES, INJURIES, PROPDMG)~EVTYPE, data=DF, sum)
-
-```
-
-```{r generate-aggregate-2}
-
-# Extract data that is equal to or above the 98th percentile
-quantiles <- sapply(by_evtype[-1], quantile, probs = .98)
-by_evtype <- filter(by_evtype, FATALITIES >= quantiles[1] | INJURIES >= quantiles[2] | PROPDMG >= quantiles[3])
-by_evtype
+economic_by_evtype <- aggregate(cbind(PROPDMG, CROPDMG)~EVTYPE, data=df, sum)
+economic_quantiles <- sapply(economic_by_evtype[-1], quantile, probs = .97)
+economic_by_evtype <- filter(economic_by_evtype, 
+                             PROPDMG >= economic_quantiles[1] |
+                            CROPDMG >= economic_quantiles[2])
 ```
 ## Results
 
 ```{r publish-results}
 
-mosaicplot(~ FATALITIES + INJURIES + PROPDMG, data = by_evtype)
+# Publish the health fallout
+physical_by_evtype <- melt(physical_by_evtype, id.var="EVTYPE")
+head(physical_by_evtype)
+
+ggplot(physical_by_evtype, aes(x = EVTYPE, y = value, fill = variable)) + 
+  geom_bar(stat = "identity") +
+  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+
+# Publish the economic fallout
+economic_by_evtype <- melt(economic_by_evtype, id.var="EVTYPE")
+head(economic_by_evtype)
+
+ggplot(economic_by_evtype, aes(x = EVTYPE, y = value, fill = variable)) + 
+  geom_bar(stat = "identity") +
+  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+
 ```

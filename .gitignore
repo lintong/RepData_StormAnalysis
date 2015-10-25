@@ -15,7 +15,5 @@ vignettes/*.pdf
 # Rmd cache directory
 *_cache
 
-# Output HTML files from Rmd
-*.html
 
 
