@@ -56,13 +56,17 @@ physical_quantiles <- sapply(physical_by_evtype[-1], quantile, probs = .97)
 physical_by_evtype <- filter(physical_by_evtype,
                              FATALITIES >= physical_quantiles[1] |
                              INJURIES >= physical_quantiles[2])
-physical_by_evtype <- melt(physical_by_evtype, id.var="EVTYPE")
 
 economic_by_evtype <- aggregate(cbind(PROPDMG, CROPDMG)~EVTYPE, data=df, sum)
 economic_quantiles <- sapply(economic_by_evtype[-1], quantile, probs = .97)
 economic_by_evtype <- filter(economic_by_evtype,
                              PROPDMG >= economic_quantiles[1] |
                             CROPDMG >= economic_quantiles[2])
+
+names(physical_by_evtype) <- c("EVTYPE", "fatalities", "injuries")
+names(economic_by_evtype) <- c("EVTYPE", "property damage", "crop damage")
+
+physical_by_evtype <- melt(physical_by_evtype, id.var="EVTYPE")
 economic_by_evtype <- melt(economic_by_evtype, id.var="EVTYPE")
 
 ```
@@ -72,14 +76,14 @@ The result seem to indicate that tornados and flooding are collectively responsi
 
 
 ```{r publish-results-health-fallout}
-
 # Publish the health fallout
 ggplot(physical_by_evtype, aes(x = EVTYPE, y = value, fill = variable)) + 
   geom_bar(stat = "identity") +
   theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
   xlab("Weather condition") +
   ylab("Public health implication") +
-  ggtitle("Weather condition vs Public health fallout")
+  ggtitle("Weather condition vs public health fallout")
+
 ```
 
 ```{r publish-results-economic-fallout}
@@ -89,5 +93,6 @@ ggplot(economic_by_evtype, aes(x = EVTYPE, y = value, fill = variable)) +
   theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
   xlab("Weather condition") +
   ylab("Economic implication") +
-  ggtitle("Weather condition vs Economic fallout")
+  ggtitle("Weather condition vs economic fallout")
+
 ```
