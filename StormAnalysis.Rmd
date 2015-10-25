@@ -5,6 +5,9 @@ date: "25 October 2015"
 output: html_document
 ---
 
+## Title
+A very brief exploration of the publically available NOAA Storm Database.
+
 ## Synopsis
 The basic goal of this assignment is to explore the publically available NOAA Storm Database and answer some basic questions about severe weather events. The assignment attempts to find the most harmful weather events in terms of economic and health consequences.In particular the questions are:
 
