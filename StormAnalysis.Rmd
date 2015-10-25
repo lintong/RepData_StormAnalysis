@@ -1,21 +1,26 @@
 ---
 title: "Reproduceable Research - Storm Data Analysis"
 author: "Linton Galloway"
-date: "22 October 2015"
+date: "25 October 2015"
 output: html_document
 ---
 
 ## Synopsis
-The basic goal of this assignment is to explore the publically available NOAA Storm Database and answer some basic questions about severe weather events. The assignment attempts to find the most harmful weather events in terms of economic and health consequences.
+The basic goal of this assignment is to explore the publically available NOAA Storm Database and answer some basic questions about severe weather events. The assignment attempts to find the most harmful weather events in terms of economic and health consequences.In particular the questions are:
+
+1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+2. Across the United States, which types of events have the greatest economic consequences?
+
 
 ## Data Processing
-The approach taken to process the data is to 
+The approach taken to process the data is to: 
+
 1. rationalise duplicate weather events using a lookup chart available at <https://github.com/lintong/RepData_StormAnalysis/blob/master/storm_lookup.csv> and reduce the amount of significant duplication, 
 2. generate the sum of each type of weather event, using a desciminator of EVTYPE
 3. select the top siginificant weather events using the event type's quantile rank
 
 ```{r setup}
-knitr::opts_chunk$set(fig.path='figure/', warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(cache=TRUE, warning=FALSE, message=FALSE)
 
 inline_hook <- function(x){
   if(is.numeric(x)){
@@ -25,7 +30,7 @@ inline_hook <- function(x){
 
 knitr::knit_hooks$set(inline=inline_hook)
 
-library(dplyr)
+library(dplyr, warn.conflicts=FALSE)
 library(reshape2)
 library(ggplot2)
 ```
@@ -39,50 +44,50 @@ df             <- read.csv(bzfile(tempf))
 ```
 
 ```{r data-cleanup}
-
-# clean-up by converting to lower case
-df             <- df %>% mutate_each(funs(tolower), EVTYPE)
-
-# use look-up table to futher align the data
-# a variant of the following reference http://stackoverflow.com/questions/8214303/conditional-replacement-of-values-in-a-data-frame
 lookup_df      <- read.csv('storm_lookup.csv', colClasses = c("character","character"))
-head(lookup_df)
-
+df             <- df %>% mutate_each(funs(tolower), EVTYPE)
 df$EVTYPE_NEW  <- lookup_df[match(df$EVTYPE, lookup_df$OLD), 'NEW']
 df             <- transform(df, EVTYPE = ifelse(is.na(EVTYPE_NEW), EVTYPE, EVTYPE_NEW))
 ```
 
 ```{r generate-aggregate}
-physical_by_evtype<- aggregate(cbind(FATALITIES, INJURIES)~EVTYPE, data=df, sum)
+physical_by_evtype <- aggregate(cbind(FATALITIES, INJURIES)~EVTYPE, data=df, sum)
 physical_quantiles <- sapply(physical_by_evtype[-1], quantile, probs = .97)
-physical_by_evtype <- filter(physical_by_evtype, 
-                             FATALITIES >= physical_quantiles[1] | 
+physical_by_evtype <- filter(physical_by_evtype,
+                             FATALITIES >= physical_quantiles[1] |
                              INJURIES >= physical_quantiles[2])
+physical_by_evtype <- melt(physical_by_evtype, id.var="EVTYPE")
 
 economic_by_evtype <- aggregate(cbind(PROPDMG, CROPDMG)~EVTYPE, data=df, sum)
 economic_quantiles <- sapply(economic_by_evtype[-1], quantile, probs = .97)
-economic_by_evtype <- filter(economic_by_evtype, 
+economic_by_evtype <- filter(economic_by_evtype,
                              PROPDMG >= economic_quantiles[1] |
                             CROPDMG >= economic_quantiles[2])
+economic_by_evtype <- melt(economic_by_evtype, id.var="EVTYPE")
+
 ```
 ## Results
 
-```{r publish-results}
+The result seem to indicate that tornados and flooding are collectively responsible for the greatest economic and health consequences.
+
+
+```{r publish-results-health-fallout}
 
 # Publish the health fallout
-physical_by_evtype <- melt(physical_by_evtype, id.var="EVTYPE")
-head(physical_by_evtype)
-
 ggplot(physical_by_evtype, aes(x = EVTYPE, y = value, fill = variable)) + 
   geom_bar(stat = "identity") +
-  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
+  xlab("Weather condition") +
+  ylab("Public health implication") +
+  ggtitle("Weather condition vs Public health fallout")
+```
 
+```{r publish-results-economic-fallout}
 # Publish the economic fallout
-economic_by_evtype <- melt(economic_by_evtype, id.var="EVTYPE")
-head(economic_by_evtype)
-
-ggplot(economic_by_evtype, aes(x = EVTYPE, y = value, fill = variable)) + 
+ggplot(economic_by_evtype, aes(x = EVTYPE, y = value, fill = variable)) +
   geom_bar(stat = "identity") +
-  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-
+  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) +
+  xlab("Weather condition") +
+  ylab("Economic implication") +
+  ggtitle("Weather condition vs Economic fallout")
 ```
